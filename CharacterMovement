@@ -1,0 +1,79 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class CharMovement : MonoBehaviour
+{
+    public float movespeed = 10f;
+    public float jump = 5f;
+    private float move;
+    private Rigidbody2D rb;
+    public bool Jumping;
+    private Animator anim;
+    private bool isFacingRight;
+    void Start()
+    {
+        isFacingRight = true;
+        rb = GetComponent<Rigidbody2D>(); 
+        anim = GetComponent<Animator>();
+    }
+    void handlePlayermovement()
+    {
+        //move
+        move = Input.GetAxisRaw("Horizontal");
+        rb.velocity = new Vector2(movespeed * move, rb.velocity.y);
+        //Jump
+        if (Input.GetButtonDown("Jump") && Jumping == false)
+        {
+            rb.AddForce(new Vector2(rb.velocity.x, jump));
+            Debug.Log("Jump");
+        }
+
+        if(move != 0)
+        {
+            anim.SetBool("IsRunning", true);
+        }
+        else
+        {
+            anim.SetBool("IsRunning", false);
+        }
+
+        anim.SetBool("IsJumping", Jumping);
+        
+        if(!isFacingRight && move > 0)
+        {
+            FlipSprite();
+        }
+        else if(isFacingRight && move < 0)
+        {
+            FlipSprite();
+        }
+    }
+    //GroudCheck
+    private void OnCollisionEnter2D(Collision2D other)
+    {
+        if(other.gameObject.CompareTag("Ground"))
+        {
+            Jumping=false;
+        }
+    }
+    public void FlipSprite()
+    {
+        isFacingRight = !isFacingRight;
+        Vector3 localScale = transform.localScale;
+        localScale.x *= -1f;
+        transform.localScale = localScale;
+    }
+    private void OnCollisionExit2D(Collision2D other)
+    {
+        if(other.gameObject.CompareTag("Ground"))
+        {
+            Jumping=true; 
+        }
+    }
+    // Update is called once per frame
+    void Update()
+    {
+        handlePlayermovement();
+    }
+}
